@@ -1,4 +1,5 @@
-using EmailMictoservice.Controllers;
+using GreenPipes;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -22,12 +23,30 @@ namespace EmailMictoservice {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
+
+            //services.AddScoped(provider => {
+            //    return new EmailService("26ec68c592d70fe330d0d4e7a538f497", "e5e971781eeb3fb7f17207cb677e111b", "aop-notification@gmail.com");
+            //});
+            services.AddScoped<EmailService>();
+
             services.AddControllers();
 
-
-            services.AddScoped(provider => {
-                return new EmailService("26ec68c592d70fe330d0d4e7a538f497", "e5e971781eeb3fb7f17207cb677e111b", "aop-notification@gmail.com");
+            services.AddMassTransit(x => {
+                x.AddConsumer<EmailService>();
+                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(cur => {
+                    cur.UseHealthCheck(provider);
+                    cur.Host(new Uri("rabbitmq://localhost"), h => {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+                    cur.ReceiveEndpoint("emailQueue", oq => {
+                        oq.UseMessageRetry(r => r.Interval(1, 100));
+                        oq.ConfigureConsumer<EmailService>(provider);
+                    });
+                }));
             });
+            services.AddMassTransitHostedService();
+
 
         }
 

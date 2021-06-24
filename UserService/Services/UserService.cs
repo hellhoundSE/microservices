@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using EmailMictoservice.DTO;
+using MassTransit;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,20 +15,32 @@ namespace UserService {
     public class UserService{
 
         private readonly UserDbContext _context;
-        public UserService(UserDbContext context) {
+        private readonly IBus _bus;
+        public UserService(UserDbContext context, IBus bus) {
             _context = context;
+            _bus = bus;
         }
 
         #region CRUD
         public async Task<List<User>> GetAllAdmins() {
-            Role role = await _context.Roles.SingleOrDefaultAsync(role => role.Name.ToLower() == "admin");
-            if(role is null)
-                throw new NotFoundException($"Admin role not found");
-
-            return await _context.Users.Where(user => user.IdRole == role.IdRole).ToListAsync();
+            return await _context.Users
+                .Include(u => u.IdRoleNavigation)
+                .Where(u => u.IdRoleNavigation.Name
+                .ToLower() == "admin")
+                .ToListAsync();
         }
-        public async Task<List<User>> GetAllUsers() {
-            return await _context.Users.ToListAsync();
+        public async Task<List<string>> GetUsers(bool toEveryone) {
+            if(toEveryone)
+                return await _context.Users
+                    .Where(u => u.IsReceiveNotifications)
+                    .Select(u => u.Email)
+                    .ToListAsync();
+
+            return await _context.Users
+                .Include(u => u.IdRoleNavigation)
+                .Where(u => u.IdRoleNavigation.Name.ToLower() == "admin" && u.IsReceiveNotifications)
+                .Select(u => u.Email)
+                .ToListAsync();
         }
 
         public async Task<User> GetUserById(int idUser) {
@@ -41,11 +55,12 @@ namespace UserService {
             if (_context.Users.Any(u => u.IdUser == userDTO.IdUser))
                 throw new BadRequestException("User with given id already exists");
 
-            //TODO
-            //inform everyone about new user
             User user = new User(userDTO);
             _context.Add(user);
             await _context.SaveChangesAsync();
+
+            InformUsers("User Created!", $"Newby user {user.Name} {user.Surname} join our team", false);
+
 
             return user;
         }
@@ -74,8 +89,7 @@ namespace UserService {
             if (user is null)
                 throw new NotFoundException($"User with id {idUser} not found");
 
-            //TODO
-            //inform everyone about user death
+            InformUsers("User Removed!", $"User {user.Name} {user.Surname} left out service", false);
 
             _context.Remove(user);
             await _context.SaveChangesAsync();
@@ -99,5 +113,17 @@ namespace UserService {
         }
 
         #endregion
+
+        public async void InformUsers(string subject, string text, bool toEveryone) {
+            Uri uri = new Uri("rabbitmq://localhost:5672/emailQueue");
+            var endPoint = await _bus.GetSendEndpoint(uri);
+            EmailDTO dto = new EmailDTO() {
+                Text = text,
+                Header = subject,
+                ToEveryone = toEveryone,
+            };
+            await endPoint.Send(dto);
+        }
     }
+
 }

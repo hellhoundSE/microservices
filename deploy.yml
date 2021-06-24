@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-microservice-pod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-app
+  template:
+    metadata:
+      labels:
+        app: hello-app  
+    spec:
+      containers:
+      - name: goal-service
+        image: hellhoundse/goal-service
+        ports:
+        - containerPort: 6001
+      - name: user-service
+        image: hellhoundse/user-service
+        ports:
+        - containerPort: 4001
+      - name: email-service
+        image: hellhoundse/email-service
+        ports:
+        - containerPort: 7001
+      - name: user-db
+        image: hellhoundse/postgres
+        env:
+          - name: POSTGRES_USER
+            value: admin
+          - name: POSTGRES_PASSWORD
+            value: admin
+        ports:
+         - containerPort: 15433
+      - name: goal-db
+        image: postgres:9.4
+        env:
+          - name: POSTGRES_USER
+            value: admin
+          - name: POSTGRES_PASSWORD
+            value: admin
+        ports:
+         - containerPort: 15432
+      - name: rabbitmq
+        image: hellhoundse/rabbitmq
+        ports:
+        - containerPort: 15672
+  

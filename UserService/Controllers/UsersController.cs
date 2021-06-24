@@ -23,8 +23,8 @@ namespace UserService.Controllers {
         #region CRUD
 
         [HttpGet]
-        public async Task<IActionResult> GetAllUsers() {
-            return Ok(await _service.GetAllUsers());
+        public async Task<IActionResult> GetAllUsers(bool toEveryone) {
+            return Ok(await _service.GetUsers(toEveryone));
         }
         [HttpGet("{idUser}")]
         public async Task<IActionResult> GetUser(int idUser) {

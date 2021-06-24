@@ -1,0 +1,36 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+' LAYOUT_AS_SKETCH()
+LAYOUT_WITH_LEGEND()
+
+title Container diagram for Internet Banking System
+
+Person(user, User, "Person who creates tasks")
+
+Boundary(web_app_boundary, "TODO system") {
+    Container(frontend, "Frontend", "React", "Web interface to manage tasks")
+    Container(user_microservice, "User Microservice", ".NET", "Microservice to manage users data")
+    Container(goal_microservice, "Goal Microservice", ".NET", "Microservice to crud on goals")
+    Container(email_microservice, "Email Microservice", ".NET", "Microservice to send emails")
+    ContainerDb(user_db, "User database", "Postgres Database", "Contains users data")
+    ContainerDb(goal_db, "Goal database", "Postgres Database", "Contains goals data")
+    Container(rabbit, "RabbitMQ", "", "Queue to set up communication between services")
+}
+
+
+Rel(user, frontend, "Manage goals")
+Rel(frontend, goal_microservice, "Send/Get data from API")
+Rel(frontend, user_microservice, "Send/Get data from API")
+
+Rel(user_microservice, rabbit, "Communicates using")
+Rel(goal_microservice, rabbit, "Communicates using")
+Rel(email_microservice, rabbit, "Communicates using")
+
+
+Rel(user_microservice,user_db, "Manage data")
+Rel(goal_microservice,goal_db, "Manage data")
+@enduml

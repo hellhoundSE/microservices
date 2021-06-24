@@ -6,17 +6,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UserService.Models.Exceptions;
+using MassTransit;
+using EmailMictoservice.DTO;
 
 namespace GoalMicroservice {
     public class GoalService {
+
         private readonly GoalDbContext _context;
-        public GoalService(GoalDbContext context) {
+        private readonly IBus _bus;
+
+        public GoalService(GoalDbContext context, IBus bus) {
             _context = context;
+            _bus = bus;
         }
 
         #region CRUD
 
         public async Task<List<Goal>> GetAllGoals() {
+            InformUsers("test", "testtest", false);
             return await _context.Goals.ToListAsync();
         }
 
@@ -32,11 +39,12 @@ namespace GoalMicroservice {
             if (_context.Goals.Any(goal => goal.IdGoal == goalDTO.IdGoal))
                 throw new BadRequestException("Goal with given id already exists");
 
-            //TODO
-            //inform everyone about new user
+
             Goal goal = new Goal(goalDTO);
             _context.Add(goal);
             await _context.SaveChangesAsync();
+
+            InformUsers("New Goal!", "New goal was created, check this out!", true);
 
             return goal;
         }
@@ -53,20 +61,20 @@ namespace GoalMicroservice {
             _context.Update(goal);
             await _context.SaveChangesAsync();
 
+            InformUsers("New Update!", $"The {goal.Text} was updated, check this out!", true);
+
             return goal;
         }
 
         public async Task<Goal> DeleteGoalById(int idGoal) {
-            var goal = await _context.Goals.SingleOrDefaultAsync(goal  => goal.IdGoal == idGoal);
+            var goal = await _context.Goals.SingleOrDefaultAsync(goal => goal.IdGoal == idGoal);
             if (goal is null)
                 throw new NotFoundException($"User with id {idGoal} not found");
 
             _context.Remove(goal);
             await _context.SaveChangesAsync();
 
-            //TODO
-            //inform users
-
+            InformUsers("One less :(", $"The {goal.Text} was deleted", true);
 
             return goal;
         }
@@ -110,5 +118,17 @@ namespace GoalMicroservice {
         }
 
         #endregion
+
+        public async void InformUsers(string subject, string text,bool toEveryone) {
+            Uri uri = new Uri("rabbitmq://localhost:5672/emailQueue");
+            var endPoint = await _bus.GetSendEndpoint(uri);
+            EmailDTO dto = new EmailDTO() {
+                Text = text,
+                Header = subject,
+                ToEveryone = toEveryone,
+            };
+            await endPoint.Send(dto);
+        }
+
     }
 }

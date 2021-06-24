@@ -39,3 +39,13 @@ C:\Users\yserr\Desktop\Microservices\UserService\obj\Debug\netcoreapp3.1\UserMic
 C:\Users\yserr\Desktop\Microservices\UserService\obj\Debug\netcoreapp3.1\UserMicroservice.dll
 C:\Users\yserr\Desktop\Microservices\UserService\obj\Debug\netcoreapp3.1\UserMicroservice.pdb
 C:\Users\yserr\Desktop\Microservices\UserService\obj\Debug\netcoreapp3.1\UserMicroservice.genruntimeconfig.cache
+C:\Users\yserr\Desktop\Microservices\UserService\bin\Debug\netcoreapp3.1\GreenPipes.dll
+C:\Users\yserr\Desktop\Microservices\UserService\bin\Debug\netcoreapp3.1\MassTransit.dll
+C:\Users\yserr\Desktop\Microservices\UserService\bin\Debug\netcoreapp3.1\MassTransit.ExtensionsDependencyInjectionIntegration.dll
+C:\Users\yserr\Desktop\Microservices\UserService\bin\Debug\netcoreapp3.1\MassTransit.RabbitMqTransport.dll
+C:\Users\yserr\Desktop\Microservices\UserService\bin\Debug\netcoreapp3.1\NewId.dll
+C:\Users\yserr\Desktop\Microservices\UserService\bin\Debug\netcoreapp3.1\Newtonsoft.Json.Bson.dll
+C:\Users\yserr\Desktop\Microservices\UserService\bin\Debug\netcoreapp3.1\RabbitMQ.Client.dll
+C:\Users\yserr\Desktop\Microservices\UserService\bin\Debug\netcoreapp3.1\MassTransit.AspNetCoreIntegration.dll
+C:\Users\yserr\Desktop\Microservices\UserService\bin\Debug\netcoreapp3.1\MassTransit.ExtensionsLoggingIntegration.dll
+C:\Users\yserr\Desktop\Microservices\UserService\bin\Debug\netcoreapp3.1\Microsoft.Extensions.PlatformAbstractions.dll

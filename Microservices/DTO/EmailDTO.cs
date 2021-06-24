@@ -8,5 +8,4 @@ namespace EmailMictoservice.DTO {
         public string Text { get; set; }
         public bool ToEveryone { get; set; }
     }
-
 }
